@@ -31,5 +31,5 @@ func main() {
 	})
 	restful.Add(swaggerService)
 
-	biu.Run(":" + os.Getenv("PORT"))
+	biu.Run(":"+os.Getenv("PORT"), nil)
 }
