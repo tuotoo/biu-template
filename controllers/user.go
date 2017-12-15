@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"github.com/emicklei/go-restful"
 	"github.com/tuotoo/biu"
 	"github.com/tuotoo/biu-template/models"
 )
@@ -10,56 +9,57 @@ import (
 type UserResource struct{}
 
 // WebService creates a new service that can handle REST requests for User resources.
-func (u UserResource) WebService(ws biu.WS) {
-	ws.Route(ws.GET("/").To(u.findAllUsers).
+func (ctl UserResource) WebService(ws biu.WS) {
+	ws.Route(ws.GET("/").To(biu.Handle(ctl.findAllUsers)).
 		Doc("get all Users").
 		Writes([]models.User{}).
 		Returns(200, "OK", []models.User{}), nil)
 
-	ws.Route(ws.GET("/{user-id}").To(u.findUser).
+	ws.Route(ws.GET("/{user-id}").To(biu.Handle(ctl.findUser)).
 		Doc("get a user").
-		Param(ws.PathParameter("user-id", "identifier of the user").DataType("integer").DefaultValue("1")).
+		Param(ws.PathParameter("user-id", "identifier of the user").
+			DataType("integer").DefaultValue("1")).
 		Writes(models.User{}).
 		Returns(200, "OK", models.User{}).
 		Returns(404, "Not Found", nil), nil)
 
-	ws.Route(ws.PUT("/{user-id}").To(u.updateUser).
+	ws.Route(ws.PUT("/{user-id}").To(biu.Handle(ctl.updateUser)).
 		Doc("update a user").
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
 		Reads(models.User{}), nil)
 
-	ws.Route(ws.PUT("/").To(u.createUser).
+	ws.Route(ws.PUT("/").To(biu.Handle(ctl.createUser)).
 		Doc("create a user").
 		Reads(models.User{}), nil)
 
-	ws.Route(ws.DELETE("/{user-id}").To(u.removeUser).
+	ws.Route(ws.DELETE("/{user-id}").To(biu.Handle(ctl.removeUser)).
 		Doc("delete a user").
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")), nil)
 }
 
-func (u UserResource) findAllUsers(request *restful.Request, response *restful.Response) {
+func (ctl UserResource) findAllUsers(ctx biu.Ctx) {
 	biu.Debug("UserResource.findAllUsers", biu.Log())
-	biu.ResponseJSON(response, models.User{})
+	ctx.ResponseJSON(models.User{})
 }
 
-func (u UserResource) findUser(request *restful.Request, response *restful.Response) {
-	id := request.PathParameter("user-id")
+func (ctl UserResource) findUser(ctx biu.Ctx) {
+	id := ctx.PathParameter("user-id")
 	biu.Debug("UserResource.findUser", biu.Log().Str("id", id))
 }
 
-func (u *UserResource) updateUser(request *restful.Request, response *restful.Response) {
+func (ctl *UserResource) updateUser(ctx biu.Ctx) {
 	usr := new(models.User)
-	err := request.ReadEntity(&usr)
+	err := ctx.ReadEntity(&usr)
 	biu.Debug("UserResource.updateUser", biu.Log().Interface("user", usr).Err(err))
 }
 
-func (u *UserResource) createUser(request *restful.Request, response *restful.Response) {
-	usr := models.User{ID: request.PathParameter("user-id")}
-	err := request.ReadEntity(&usr)
+func (ctl *UserResource) createUser(ctx biu.Ctx) {
+	usr := models.User{ID: ctx.PathParameter("user-id")}
+	err := ctx.ReadEntity(&usr)
 	biu.Debug("UserResource.createUser", biu.Log().Interface("user", usr).Err(err))
 }
 
-func (u *UserResource) removeUser(request *restful.Request, response *restful.Response) {
-	id := request.PathParameter("user-id")
+func (ctl *UserResource) removeUser(ctx biu.Ctx) {
+	id := ctx.PathParameter("user-id")
 	biu.Debug("UserResource.removeUser", biu.Log().Str("id", id))
 }
